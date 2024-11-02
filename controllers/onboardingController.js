@@ -72,3 +72,40 @@ export const createAccount = async (req, res) => {
   }
 };
 
+// Controller function to create a space with devices
+export const createSpaceWithDevices = async (req, res) => {
+  const { space } = req.body;
+
+  // Basic validation to ensure the space data is provided
+  if (!space || typeof space !== "object" || Object.keys(space).length === 0) {
+    return res.status(400).json({ error: "Space with devices is required" });
+  }
+
+  try {
+    const createSpaceQuery = fql`spaces.create(${{
+      space,
+    }})`;
+
+    const result = await faunaClient.query(createSpaceQuery);
+    res
+      .status(201)
+      .json({
+        message: "Space with devices created successfully",
+        data: result,
+      });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        error: "An error occurred while creating the space with devices",
+      });
+    }
+
+    console.error("Error creating space with devices:", error);
+    res
+      .status(500)
+      .json({
+        error: "An error occurred while creating the space with devices",
+      });
+  }
+};
