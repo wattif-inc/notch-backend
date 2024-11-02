@@ -1,7 +1,46 @@
 import validator from "validator";
+import faunaClient from "../database/conn.js";
+import { fql, ServiceError } from "fauna";
 
+// Controller function to create an organization
+export const createOrganisation = async (req, res) => {
+  const { clientName, buildingName, numberOfFloors, space } = req.body;
+
+  if (!clientName || !buildingName || !numberOfFloors || !space) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const createAccountQuery = fql`onboarding.create(${{
+      clientName,
+      buildingName,
+      numberOfFloors,
+      space,
+    }})`;
+
+    const result = await faunaClient.query(createAccountQuery);
+    res
+      .status(201)
+      .json({ message: "Organisation created successfully", data: result });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.log("from fauna==>", error);
+      res.status(500).json({
+        error: "An error occurred while creating the organisation",
+      });
+    }
+
+    console.error("Error creating organisation:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while creating the organisation" });
+  } finally {
+    // Clean up any remaining resources
+    faunaClient.close();
+  }
+};
 // Onboard new user route
-app.post("/users", async (req, res) => {
+export const createAccount = async (req, res) => {
   const { clientName, buildingName, numberOfFloors, space } = req.body;
 
   // Input validations
@@ -17,7 +56,7 @@ app.post("/users", async (req, res) => {
 
   // Save user to FaunaDB
   try {
-    const result = await client.query(
+    const result = await faunaClient.query(
       q.Create(q.Collection("Users"), {
         data: {
           clientName,
@@ -31,46 +70,5 @@ app.post("/users", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
+};
 
-// Add device route
-app.post("/devices", async (req, res) => {
-  const { deviceName, userId } = req.body;
-
-  // Input validation
-  if (!deviceName || !userId) {
-    return res
-      .status(400)
-      .json({ error: "Device name and user ID are required" });
-  }
-
-  // Save device to FaunaDB
-  try {
-    const result = await client.query(
-      q.Create(q.Collection("Devices"), {
-        data: {
-          deviceName,
-          userId,
-        },
-      })
-    );
-    res.status(201).json(result);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get all devices route
-app.get("/devices", async (req, res) => {
-  try {
-    const result = await client.query(
-      q.Map(
-        q.Paginate(q.Documents(q.Collection("Devices"))),
-        q.Lambda("device", q.Get(q.Var("device")))
-      )
-    );
-    res.status(200).json(result.data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});

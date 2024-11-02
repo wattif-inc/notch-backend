@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { createAccount } from "../controllers/onboardingController";
+import onboardingRouter from "./onboarding.routes.js";
 
 const router = Router();
 
-router.use("/", createAccount);
+router.use("/onboarding", onboardingRouter);
 
 export default router;
