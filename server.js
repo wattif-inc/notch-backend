@@ -27,19 +27,16 @@ app.disable("x-powered-by"); //less hackers know about your stack
 
 app.use(clerkMiddleware());
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8081;
 
 /** HTTP GET Request */
 app.get("/", async (req, res) => {
-  const getUsers = await clerkClient.users.getUserList();
-  // res.status(200).json("Welcome to notch-backed");
-  res.status(200).json(getUsers);
+  res.status(200).json("Welcome to notch-backed");
 });
 
 /** API routes */
 
 app.use("/api/v1", Routes);
-
 
 app.listen(port, () => {
   console.log(`Server connected to PORT:${port}`);

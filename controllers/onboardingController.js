@@ -4,7 +4,7 @@ import { fql, ServiceError } from "fauna";
 import { clerkClient } from "@clerk/express";
 
 // Controller function to create an organization
-export const createOrganisation = async (req, res) => {
+export const createOrganization = async (req, res) => {
   const { organizationName, organizationEmail, buildingName, password } =
     req.body;
 
@@ -21,7 +21,7 @@ export const createOrganisation = async (req, res) => {
       password,
     });
     console.log("user==>", user);
-    const createOrganizationQuery = fql`onboarding.create(${{
+    const createOrganizationQuery = fql`organization.create(${{
       organizationName,
       organizationEmail,
       buildingName,
@@ -48,6 +48,17 @@ export const createOrganisation = async (req, res) => {
   } finally {
     // Clean up any remaining resources
     // faunaClient.close();
+  }
+};
+
+export const getOrganization = async (req, res) => {
+  try {
+    const getUsers = await clerkClient.users.getUserList();
+    res.status(200).json(getUsers);
+  } catch (error) {
+    res.status(500).json({
+      error: "An error occurred while fetching the Organisation accounts",
+    });
   }
 };
 
