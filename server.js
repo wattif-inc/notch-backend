@@ -2,6 +2,7 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import express from "express";
+import { clerkMiddleware, clerkClient } from "@clerk/express";
 
 import faunaClient from "./database/conn.js";
 import Routes from "./router/index.js";
@@ -22,11 +23,17 @@ app.use(morgan("tiny"));
 
 app.disable("x-powered-by"); //less hackers know about your stack
 
+/** clerk integration keys */
+
+app.use(clerkMiddleware());
+
 const port = process.env.PORT || process.env.APP_PORT || 8080;
 
 /** HTTP GET Request */
-app.get("/", (req, res) => {
-  res.status(200).json("Welcome to notch-backed");
+app.get("/", async (req, res) => {
+  const getUsers = await clerkClient.users.getUserList();
+  // res.status(200).json("Welcome to notch-backed");
+  res.status(200).json(getUsers);
 });
 
 /** API routes */
