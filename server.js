@@ -27,7 +27,7 @@ app.disable("x-powered-by"); //less hackers know about your stack
 
 app.use(clerkMiddleware());
 
-const port = process.env.PORT || process.env.APP_PORT || 8080;
+const port = process.env.PORT || 8080;
 
 /** HTTP GET Request */
 app.get("/", async (req, res) => {
@@ -40,21 +40,7 @@ app.get("/", async (req, res) => {
 
 app.use("/api/v1", Routes);
 
-/** start server only when we have valid connection */
 
-// faunaClient()
-//   .then(() => {
-//     try {
-//       app.listen(port, () => {
-//         console.log(`Server connected to PORT:${port}`);
-//       });
-//     } catch (error) {
-//       console.log("Cannot connect to the server");
-//     }
-//   })
-//   .catch((error) => {
-//     console.log(error.message, "Invalid database connection");
-//   });
 app.listen(port, () => {
   console.log(`Server connected to PORT:${port}`);
 });
