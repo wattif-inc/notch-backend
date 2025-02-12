@@ -70,3 +70,60 @@ export const getAllSpacesWithDevices = async (req, res) => {
     faunaClient.close();
   }
 };
+
+export const createWorkSpace = async (req, res) => {
+  const { workspaceName } = req.body;
+
+  if (!workspaceName) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const createWorkspaceQuery = fql`workspaces.create(${{
+      workspaceName,
+    }})`;
+
+    const result = await faunaClient.query(createWorkspaceQuery);
+    res.status(201).json({
+      message: "Workspace was created successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        error: "An error occurred while creating the Workspace",
+      });
+    }
+
+    console.error("Error creating Workspace:", error);
+    res.status(500).json({
+      error: "An error occurred while creating the Workspace",
+    });
+  }
+};
+
+export const getAllworkspaces = async (req, res) => {
+  try {
+    const getAllWorkspacesQuery = fql`workspaces.all()`;
+
+    const result = await faunaClient.query(getAllWorkspacesQuery);
+
+    res.status(200).json({
+      message: "Workspaces were fetched successfully",
+      data: result.data,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        error: "An error occurred while fetching the Workspaces",
+      });
+    }
+
+    console.error("Error fetching Workspaces:", error);
+    res.status(500).json({
+      error: "An error occurred while fetching the Workspaces",
+    });
+  }
+};
