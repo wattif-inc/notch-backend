@@ -3,7 +3,6 @@ import faunaClient from "../database/conn.js";
 import { fql, ServiceError } from "fauna";
 import { clerkClient } from "@clerk/express";
 
-// Controller function to create an organization
 export const createOrganization = async (req, res) => {
   const { organizationName, organizationEmail, buildingName, password } =
     req.body;
@@ -45,10 +44,7 @@ export const createOrganization = async (req, res) => {
       msg: "An error occurred while creating the organisation",
       error,
     });
-  } finally {
-    // Clean up any remaining resources
-    // faunaClient.close();
-  }
+  } 
 };
 
 export const getOrganization = async (req, res) => {
@@ -62,7 +58,6 @@ export const getOrganization = async (req, res) => {
   }
 };
 
-// Controller function to fetch all spaces with devices
 export const getAllAccounts = async (req, res) => {
   try {
     // FQL query to retrieve all spaces
@@ -89,7 +84,6 @@ export const getAllAccounts = async (req, res) => {
   }
 };
 
-// Onboard new user route
 export const createAccount = async (req, res) => {
   const { clientName, buildingName, numberOfFloors, space } = req.body;
 
@@ -104,7 +98,6 @@ export const createAccount = async (req, res) => {
       .json({ error: "Number of floors should be a positive integer" });
   }
 
-  // Save user to FaunaDB
   try {
     const result = await faunaClient.query(
       q.Create(q.Collection("Users"), {
