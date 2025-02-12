@@ -7,6 +7,6 @@ import {
 const router = Router();
 
 router.route("/").get(getAllSpacesWithDevices);
-router.route("/create-space").post(createSpaceWithDevices);
+router.route("/create").post(createSpaceWithDevices);
 
 export default router;
