@@ -61,7 +61,7 @@ export const getAllAppliances = async (req, res) => {
   }
 };
 
-export const createSensor = async (req, res) => {
+export const createSensors = async (req, res) => {
   const { sensorName } = req.body;
 
   if (!sensorName) {
@@ -114,6 +114,63 @@ export const getAllSensors = async (req, res) => {
     console.error("Error fetching sensors:", error);
     res.status(500).json({
       error: "An error occurred while fetching the sensors",
+    });
+  }
+};
+
+export const createButtons = async (req, res) => {
+  const { buttonName } = req.body;
+
+  if (!buttonName) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const createButtonQuery = fql`buttons.create(${{
+      buttonName,
+    }})`;
+
+    const result = await faunaClient.query(createButtonQuery);
+    res.status(201).json({
+      message: "Button was created successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        error: "An error occurred while creating the Button",
+      });
+    }
+
+    console.error("Error creating Button:", error);
+    res.status(500).json({
+      error: "An error occurred while creating the Button",
+    });
+  }
+};
+
+export const getAllbuttons = async (req, res) => {
+  try {
+    const getAllButtonQuery = fql`buttons.all()`;
+
+    const result = await faunaClient.query(getAllButtonQuery);
+
+    res.status(200).json({
+      message: "Button were fetched successfully",
+      data: result.data,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        error: "An error occurred while fetching the Buttons",
+      });
+    }
+
+    console.error("Error fetching sensors:", error);
+    res.status(500).json({
+      error: "An error occurred while fetching the Buttons",
     });
   }
 };
