@@ -11,11 +11,11 @@ export const createAppliances = async (req, res) => {
   }
 
   try {
-    const createSpaceQuery = fql`appliance.create(${{
+    const createApplianceQuery = fql`appliance.create(${{
       applianceName,
     }})`;
 
-    const result = await faunaClient.query(createSpaceQuery);
+    const result = await faunaClient.query(createApplianceQuery);
     res.status(201).json({
       message: "Sappliance created successfully",
       data: result,
@@ -24,13 +24,13 @@ export const createAppliances = async (req, res) => {
     if (error instanceof ServiceError) {
       console.error("Fauna error:", error);
       return res.status(500).json({
-        error: "An error occurred while creating the space with devices",
+        error: "An error occurred while creating appliances",
       });
     }
 
-    console.error("Error creating space with devices:", error);
+    console.error("Error creating appliances:", error);
     res.status(500).json({
-      error: "An error occurred while creating the space with devices",
+      error: "An error occurred while creatingappliances",
     });
   }
 };
@@ -38,9 +38,9 @@ export const createAppliances = async (req, res) => {
 export const getAllAppliances = async (req, res) => {
   try {
     // FQL query to retrieve all spaces
-    const getAllSpacesQuery = fql`appliance.all()`;
+    const getAllApplianceQuery = fql`appliance.all()`;
 
-    const result = await faunaClient.query(getAllSpacesQuery);
+    const result = await faunaClient.query(getAllApplianceQuery);
 
     res.status(200).json({
       message: "appliances fetched successfully",
@@ -50,13 +50,70 @@ export const getAllAppliances = async (req, res) => {
     if (error instanceof ServiceError) {
       console.error("Fauna error:", error);
       return res.status(500).json({
-        error: "An error occurred while fetching the spaces with devices",
+        error: "An error occurred while fetching the appliances",
       });
     }
 
-    console.error("Error fetching spaces with devices:", error);
+    console.error("Error fetching appliances:", error);
     res.status(500).json({
-      error: "An error occurred while fetching the spaces with devices",
+      error: "An error occurred while fetching appliances",
+    });
+  }
+};
+
+export const createSensor = async (req, res) => {
+  const { sensorName } = req.body;
+
+  if (!sensorName) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const createSensorQuery = fql`sensors.create(${{
+      sensorName,
+    }})`;
+
+    const result = await faunaClient.query(createSensorQuery);
+    res.status(201).json({
+      message: "sensor was created successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        error: "An error occurred while creating the sensors",
+      });
+    }
+
+    console.error("Error creating sensor:", error);
+    res.status(500).json({
+      error: "An error occurred while creating the sensor",
+    });
+  }
+};
+
+export const getAllSensors = async (req, res) => {
+  try {
+    const getAllSensorsQuery = fql`sensors.all()`;
+
+    const result = await faunaClient.query(getAllSensorsQuery);
+
+    res.status(200).json({
+      message: "sensors were fetched successfully",
+      data: result.data,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        error: "An error occurred while fetching the sensors",
+      });
+    }
+
+    console.error("Error fetching sensors:", error);
+    res.status(500).json({
+      error: "An error occurred while fetching the sensors",
     });
   }
 };
