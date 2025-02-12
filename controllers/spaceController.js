@@ -3,7 +3,6 @@ import faunaClient from "../database/conn.js";
 import { fql, ServiceError } from "fauna";
 import { clerkClient } from "@clerk/express";
 
-// Controller function to create a space with devices
 export const createSpaceWithDevices = async (req, res) => {
   const { spaceName, spaceSize, spaceType, floor, devices, clerkId } = req.body;
 
@@ -42,7 +41,6 @@ export const createSpaceWithDevices = async (req, res) => {
   }
 };
 
-// Controller function to fetch all spaces with devices
 export const getAllSpacesWithDevices = async (req, res) => {
   try {
     // FQL query to retrieve all spaces
@@ -66,9 +64,7 @@ export const getAllSpacesWithDevices = async (req, res) => {
     res.status(500).json({
       error: "An error occurred while fetching the spaces with devices",
     });
-  } finally {
-    faunaClient.close();
-  }
+  } 
 };
 
 export const createWorkSpace = async (req, res) => {
