@@ -6,29 +6,31 @@ import { clerkClient } from "@clerk/express";
 export const createOrganization = async (req, res) => {
   const { organizationName, organizationEmail, buildingName, password } =
     req.body;
+  const { auth } = req;
+
+  if (!auth || !auth.userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
   if (!organizationName || !organizationEmail || !buildingName) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
   try {
-    const user = await clerkClient.users.createUser({
-      emailAddress: [organizationEmail],
-      username: organizationName,
-      firstName: organizationName,
-      lastName: "Inc",
-      password,
+    const organization = await clerkClient.organizations({
+      name: organizationName,
+      slug: organizationName,
+      createdBy: auth.userId,
     });
-    console.log("user==>", user);
+    console.log("organization==>", organization);
     const createOrganizationQuery = fql`organization.create(${{
       organizationName,
       organizationEmail,
-      buildingName,
-      clerkId: user.id,
+      clerkId: auth.userId,
     }})`;
     const result = await faunaClient.query(createOrganizationQuery);
     res.status(201).json({
-      message: "Organization and building onboarded successfully",
+      message: "The Organizationwas successfully",
       data: result.data,
     });
   } catch (error) {
@@ -44,8 +46,52 @@ export const createOrganization = async (req, res) => {
       msg: "An error occurred while creating the organisation",
       error,
     });
-  } 
+  }
 };
+
+// export const createOrganization = async (req, res) => {
+//   const { organizationName, organizationEmail, buildingName, password } =
+//     req.body;
+
+//   if (!organizationName || !organizationEmail || !buildingName) {
+//     return res.status(400).json({ error: "All fields are required" });
+//   }
+
+//   try {
+//     const user = await clerkClient.users.createUser({
+//       emailAddress: [organizationEmail],
+//       username: organizationName,
+//       firstName: organizationName,
+//       lastName: "Inc",
+//       password,
+//     });
+//     console.log("user==>", user);
+//     const createOrganizationQuery = fql`organization.create(${{
+//       organizationName,
+//       organizationEmail,
+//       buildingName,
+//       clerkId: user.id,
+//     }})`;
+//     const result = await faunaClient.query(createOrganizationQuery);
+//     res.status(201).json({
+//       message: "Organization and building onboarded successfully",
+//       data: result.data,
+//     });
+//   } catch (error) {
+//     if (error instanceof ServiceError) {
+//       console.log("from fauna==>", error);
+//       res.status(500).json({
+//         error: "An error occurred while creating the organisation",
+//       });
+//     }
+
+//     console.error("Error creating organisation:", error);
+//     res.status(500).json({
+//       msg: "An error occurred while creating the organisation",
+//       error,
+//     });
+//   }
+// };
 
 export const getOrganization = async (req, res) => {
   try {
@@ -114,4 +160,3 @@ export const createAccount = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
