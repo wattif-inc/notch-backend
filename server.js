@@ -2,7 +2,7 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import express from "express";
-import { clerkMiddleware, clerkClient } from "@clerk/express";
+import { clerkMiddleware, clerkClient, getAuth } from "@clerk/express";
 
 import faunaClient from "./database/conn.js";
 import Routes from "./router/index.js";

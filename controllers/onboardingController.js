@@ -4,31 +4,50 @@ import { fql, ServiceError } from "fauna";
 import { clerkClient } from "@clerk/express";
 
 export const createOrganization = async (req, res) => {
-  const { organizationName, organizationEmail, buildingName, password } =
-    req.body;
+  const { organizationName, organizationEmail, slug } = req.body;
 
-  if (!organizationName || !organizationEmail || !buildingName) {
+  const { auth } = req;
+
+  console.log("auth==>", auth);
+
+  // if (!auth || !auth.userId) {
+  //   return res.status(401).json({ message: "Unauthorized" });
+  // }
+
+  if (!organizationName || !organizationEmail) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
   try {
-    const user = await clerkClient.users.createUser({
-      emailAddress: [organizationEmail],
-      username: organizationName,
-      firstName: organizationName,
-      lastName: "Inc",
-      password,
+    const organization = await clerkClient.organizations.createOrganization({
+      name: organizationName,
+      slug: slug,
+      // createdBy: auth.userId,
+      createdBy: "user_2mQl5L6YAqEBJy3fPsGb3a2nZ8z",
+      maxAllowedMemberships: 100,
     });
-    console.log("user==>", user);
+    console.log("organization==>", organization);
+
+    const invitation =
+      await clerkClient.organizations.createOrganizationInvitation({
+        organizationId: organization.id,
+        emailAddress: organizationEmail,
+        role: "org:admin",
+        metadata: {
+          company: organizationName,
+          invitedBy: "user_2mQl5L6YAqEBJy3fPsGb3a2nZ8z",
+        },
+      });
+    console.log("Invitation sent:", invitation);
+
     const createOrganizationQuery = fql`organization.create(${{
       organizationName,
       organizationEmail,
-      buildingName,
-      clerkId: user.id,
+      clerkOrgId: organization.id,
     }})`;
     const result = await faunaClient.query(createOrganizationQuery);
     res.status(201).json({
-      message: "Organization and building onboarded successfully",
+      message: `The Organizationwas successfully, and an invitation was sent to ${organizationEmail}`,
       data: result.data,
     });
   } catch (error) {
@@ -44,12 +63,12 @@ export const createOrganization = async (req, res) => {
       msg: "An error occurred while creating the organisation",
       error,
     });
-  } 
+  }
 };
 
 export const getOrganization = async (req, res) => {
   try {
-    const getUsers = await clerkClient.users.getUserList();
+    const getUsers = await clerkClient.organizations.getOrganizationList();
     res.status(200).json(getUsers);
   } catch (error) {
     res.status(500).json({
@@ -115,3 +134,13 @@ export const createAccount = async (req, res) => {
   }
 };
 
+export const getAllUsers = async (req, res) => {
+  try {
+    const getUsers = await clerkClient.users.getUserList();
+    res.status(200).json(getUsers);
+  } catch (error) {
+    res.status(500).json({
+      error: "An error occurred while fetching the Organisation accounts",
+    });
+  }
+};
