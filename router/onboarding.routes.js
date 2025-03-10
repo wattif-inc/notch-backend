@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-router.route("/createAccount").post(createAccount);
+router.route("/create-user").post(createAccount);
 router.route("/create-organization").post(createOrganization);
 router.route("/accounts").get(getAllAccounts);
 router.route("/organization").get(getOrganization);
