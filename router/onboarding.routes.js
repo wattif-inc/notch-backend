@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createAccount,
   createOrganization,
+  inviteUser,
   getAllAccounts,
   getOrganization,
   getAllUsers,
@@ -9,8 +10,9 @@ import {
 
 const router = Router();
 
-router.route("/create-user").post(createAccount);
 router.route("/create-organization").post(createOrganization);
+router.route("/invite-user").post(inviteUser);
+router.route("/create-account").post(createAccount);
 router.route("/accounts").get(getAllAccounts);
 router.route("/organization").get(getOrganization);
 router.route("/users").get(getAllUsers);

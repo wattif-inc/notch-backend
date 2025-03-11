@@ -47,7 +47,7 @@ export const createOrganization = async (req, res) => {
     }})`;
     const result = await faunaClient.query(createOrganizationQuery);
     res.status(201).json({
-      message: `The Organizationwas successfully, and an invitation was sent to ${organizationEmail}`,
+      message: `The Organization was successfully, and an invitation was sent to ${organizationEmail}`,
       data: result.data,
     });
   } catch (error) {
@@ -99,6 +99,95 @@ export const getAllAccounts = async (req, res) => {
     console.error("Error fetching Organisation accounts:", error);
     res.status(500).json({
       error: "An error occurred while fetching the Organisation accounts",
+    });
+  }
+};
+
+export const inviteUser = async (req, res) => {
+  const { email, role, organizationId } = req.body;
+  const { auth } = req;
+
+  // if (!auth || !auth.userId) {
+  //   return res.status(401).json({ message: "Unauthorized" });
+  // }
+
+  if (!email || !role || !organizationId) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const invitation =
+      await clerkClient.organizations.createOrganizationInvitation({
+        // organizationId: auth.organizationId,
+        organizationId,
+        emailAddress: email,
+        role,
+        metadata: {
+          // invitedBy: auth.userId,
+          invitedBy: "user_2mQl5L6YAqEBJy3fPsGb3a2nZ8z",
+        },
+      });
+
+    res.status(201).json({
+      message: `Invitation sent to ${email}`,
+      data: invitation,
+    });
+  } catch (error) {
+    res.status(500).json({
+      msg: "An error occurred while sending the invitation",
+      error,
+    });
+  }
+};
+
+export const createUser = async (req, res) => {
+  const { username, firstName, lastName, password, emailAddress } = req.body;
+  const { auth } = req;
+
+  if (!auth || !auth.userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  if (!username || !firstname || !lastName || !password || !emailAddress) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const user = await clerkClient.users.createUser({
+      emailAddress,
+      username,
+      firstName,
+      lastName,
+      password,
+      metadata: {
+        createdBy: auth.userId,
+      },
+    });
+
+    const result = await faunaClient.query(
+      q.Create(q.Collection("Users"), {
+        data: {
+          emailAddress,
+          username,
+          firstName,
+          lastName,
+          password,
+          metadata: {
+            createdBy: auth.userId,
+          },
+          clerkUserId: user.id,
+        },
+      })
+    );
+    res.status(201).json(result);
+
+    res.status(201).json({
+      message: `User ${username} created successfully`,
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "An error occurred while creating the user",
     });
   }
 };
