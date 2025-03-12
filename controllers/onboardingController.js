@@ -2,6 +2,7 @@ import validator from "validator";
 import faunaClient from "../database/conn.js";
 import { fql, ServiceError } from "fauna";
 import { clerkClient } from "@clerk/express";
+import { getOrganizationIdFromInvite } from "../helpers/clerk.js";
 
 export const createOrganization = async (req, res) => {
   const { organizationName, organizationEmail, slug } = req.body;
@@ -128,6 +129,15 @@ export const inviteUser = async (req, res) => {
         },
       });
 
+    const createInvitationQueries = fql`invites.create(${{
+      invitationId: invitation.id,
+      organizationId,
+      email,
+      role,
+      status: invitation.status,
+    }})`;
+    const result = await faunaClient.query(createInvitationQueries);
+
     res.status(201).json({
       message: `Invitation sent to ${email}`,
       data: invitation,
@@ -144,42 +154,65 @@ export const createUser = async (req, res) => {
   const { username, firstName, lastName, password, emailAddress } = req.body;
   const { auth } = req;
 
-  if (!auth || !auth.userId) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  
-  if (!username || !firstname || !lastName || !password || !emailAddress) {
+  // if (!auth || !auth.userId) {
+  //   return res.status(401).json({ message: "Unauthorized" });
+  // }
+
+  if (!username || !firstName || !lastName || !password || !emailAddress) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
   try {
     const user = await clerkClient.users.createUser({
-      emailAddress,
+      emailAddress: [emailAddress],
       username,
       firstName,
       lastName,
       password,
       metadata: {
-        createdBy: auth.userId,
+        // createdBy: auth.userId,
+        createdBy: "user_2mQl5L6YAqEBJy3fPsGb3a2nZ8z",
       },
     });
+    // console.log("user clerk resp==>", user);
 
-    const result = await faunaClient.query(
-      q.Create(q.Collection("Users"), {
-        data: {
-          emailAddress,
-          username,
-          firstName,
-          lastName,
-          password,
-          metadata: {
-            createdBy: auth.userId,
-          },
-          clerkUserId: user.id,
-        },
-      })
-    );
-    res.status(201).json(result);
+    const organizationId = await getOrganizationIdFromInvite(emailAddress);
+    console.log("organizationId checker  resp==>", organizationId);
+
+    if (organizationId) {
+      await clerkClient.organizations.addMember(organizationId, user.id);
+    }
+
+    // if (organizationId) {
+    // const addToOrganisation = await clerkClient.organizations.addMember(
+    //   organizationId,
+    //   {
+    //     userId: user.id,
+    //     role: "org:admin", // Change role as needed
+    //   }
+    // );
+    // console.log("addToOrganisation==>", addToOrganisation);
+    // }
+
+    // const result = await faunaClient.query(
+    //   q.Create(q.Collection("Users"), {
+    //     data: {
+    //       emailAddress,
+    //       username,
+    //       firstName,
+    //       lastName,
+    //       password,
+    //       metadata: {
+    //         // createdBy: auth.userId,
+    //         createdBy: "user_2mQl5L6YAqEBJy3fPsGb3a2nZ8z",
+    //       },
+    //       clerkUserId: user.id,
+    //       clerkOrgId: organizationId,
+    //       // clerkOrgId: organization.id,
+    //     },
+    //   })
+    // );
+    // res.status(201).json(result);
 
     res.status(201).json({
       message: `User ${username} created successfully`,
@@ -187,7 +220,8 @@ export const createUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      error: "An error occurred while creating the user",
+      msg: "An error occurred while creating the user",
+      error: error,
     });
   }
 };

@@ -3,6 +3,7 @@ import {
   createAccount,
   createOrganization,
   inviteUser,
+  createUser,
   getAllAccounts,
   getOrganization,
   getAllUsers,
@@ -12,6 +13,8 @@ const router = Router();
 
 router.route("/create-organization").post(createOrganization);
 router.route("/invite-user").post(inviteUser);
+router.route("/create-user").post(createUser);
+
 router.route("/create-account").post(createAccount);
 router.route("/accounts").get(getAllAccounts);
 router.route("/organization").get(getOrganization);
