@@ -2,7 +2,7 @@ import validator from "validator";
 import faunaClient from "../database/conn.js";
 import { fql, ServiceError } from "fauna";
 import { clerkClient } from "@clerk/express";
-import { getOrganizationIdFromInvite } from "../helpers/clerk.js";
+import { getInvitationData } from "../helpers/faunadb.js";
 
 export const createOrganization = async (req, res) => {
   const { organizationName, organizationEmail, slug } = req.body;
@@ -127,6 +127,7 @@ export const inviteUser = async (req, res) => {
           // invitedBy: auth.userId,
           invitedBy: "user_2mQl5L6YAqEBJy3fPsGb3a2nZ8z",
         },
+        redirect_url: "https://studio.notch.energy/sign-up",
       });
 
     const createInvitationQueries = fql`invites.create(${{
@@ -174,13 +175,23 @@ export const createUser = async (req, res) => {
         createdBy: "user_2mQl5L6YAqEBJy3fPsGb3a2nZ8z",
       },
     });
-    // console.log("user clerk resp==>", user);
+    console.log("user clerk resp==>", user);
 
-    const organizationId = await getOrganizationIdFromInvite(emailAddress);
-    console.log("organizationId checker  resp==>", organizationId);
+    const invitationData = await getInvitationData(emailAddress);
+    console.log("invitationData checker  resp==>", invitationData);
 
-    if (organizationId) {
-      await clerkClient.organizations.addMember(organizationId, user.id);
+    if (invitationData) {
+      // let userId = "user_2tsOmnzzj5EjsmvJkmdoMAeE5Ym";
+      try {
+        const addMember = await clerkClient.organization.addMember({
+          // organizationId: invitationData.organizationId,
+          userId:user.id,
+          role: invitationData.role,
+        });
+        console.log("addMember==>", addMember);
+      } catch (err) {
+        console.error("Error adding member:", err);
+      }
     }
 
     // if (organizationId) {
