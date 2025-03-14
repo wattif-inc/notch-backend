@@ -5,7 +5,7 @@ export const getInvitationData = async (email) => {
   try {
     // Query using a Fauna index to search by email
     const getInvitedAccountQuery = fql`
-      invites.where(.email == ${email}).first()
+      invites.where(.email == ${email}).order(desc(.ts)).first()
     `;
 
     const result = await faunaClient.query(getInvitedAccountQuery);
