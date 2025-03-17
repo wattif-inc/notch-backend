@@ -1,11 +1,9 @@
 import { Router } from "express";
 import {
-  createAccount,
   createOrganization,
   inviteUser,
   createUser,
-  getAllAccounts,
-  getOrganization,
+  getAllAccountsFauna,
   getAllUsers,
 } from "../controllers/onboardingController.js";
 
@@ -15,9 +13,7 @@ router.route("/create-organization").post(createOrganization);
 router.route("/invite-user").post(inviteUser);
 router.route("/create-user").post(createUser);
 
-router.route("/create-account").post(createAccount);
-router.route("/accounts").get(getAllAccounts);
-router.route("/organization").get(getOrganization);
+router.route("/accounts").get(getAllAccountsFauna);
 router.route("/users").get(getAllUsers);
 
 export default router;
