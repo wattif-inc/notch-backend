@@ -67,18 +67,7 @@ export const createOrganization = async (req, res) => {
   }
 };
 
-export const getOrganization = async (req, res) => {
-  try {
-    const getUsers = await clerkClient.organizations.getOrganizationList();
-    res.status(200).json(getUsers);
-  } catch (error) {
-    res.status(500).json({
-      error: "An error occurred while fetching the Organisation accounts",
-    });
-  }
-};
-
-export const getAllAccounts = async (req, res) => {
+export const getAllAccountsFauna = async (req, res) => {
   try {
     // FQL query to retrieve all spaces
     const getAllAccountsQuery = fql`onboarding.all()`;
@@ -209,37 +198,6 @@ export const createUser = async (req, res) => {
       msg: "An error occurred while creating the user",
       error: error,
     });
-  }
-};
-
-export const createAccount = async (req, res) => {
-  const { clientName, buildingName, numberOfFloors, space } = req.body;
-
-  // Input validations
-  if (!clientName || !buildingName || !numberOfFloors || !space) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
-  if (!validator.isInt(numberOfFloors.toString(), { min: 1 })) {
-    return res
-      .status(400)
-      .json({ error: "Number of floors should be a positive integer" });
-  }
-
-  try {
-    const result = await faunaClient.query(
-      q.Create(q.Collection("Users"), {
-        data: {
-          clientName,
-          buildingName,
-          numberOfFloors,
-          space,
-        },
-      })
-    );
-    res.status(201).json(result);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 };
 
