@@ -78,6 +78,26 @@ export const getOrganization = async (req, res) => {
   }
 };
 
+export const removeOrganization = async (req, res) => {
+  const organizationId = req.params.id; // Extract the organization ID from the URL
+  console.log("Fetching members for organization ID:", organizationId);
+
+  if (!organizationId) {
+    return res.status(400).json({ error: "Orginisation ID is required" });
+  }
+
+  try {
+    const deleteOrganization =
+      await clerkClient.organizations.deleteOrganization(organizationId);
+    res.status(200).json(deleteOrganization);
+  } catch (error) {
+    res.status(500).json({
+      msg: "An error occurred in deleting the Organisation ",
+      error,
+    });
+  }
+};
+
 export const getMembersInOrganization = async (req, res) => {
   const organizationId = req.params.id; // Extract the organization ID from the URL
   console.log("Fetching members for organization ID:", organizationId);
