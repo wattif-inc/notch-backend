@@ -2,8 +2,8 @@ import { Router } from "express";
 import {
   getOrganization,
   getMembersInOrganization,
-  removeOrganization
-} from "../controllers/onboardingController.js";
+  removeOrganization,
+} from "../controllers/organizationController.js";
 
 const router = Router();
 
