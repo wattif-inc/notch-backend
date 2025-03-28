@@ -121,3 +121,63 @@ export const getBuildingById = async (req, res) => {
     });
   }
 };
+
+export const updateBuilding = async (req, res) => {
+  const buildingId = req.params.id;
+
+  if (!buildingId) {
+    return res.status(400).json({ error: "Building ID is required" });
+  }
+
+  const {
+    buildingName,
+    buildingUrlSlug,
+    location,
+    region,
+    noOfFloor,
+    manager,
+  } = req.body;
+
+  //   if (
+  //     !!buildingName ||
+  //     !buildingUrlSlug ||
+  //     !location ||
+  //     !region ||
+  //     !noOfFloor ||
+  //     !manager
+  //   ) {
+  //     return res.status(400).json({ error: "Building ID is required" });
+  //   }
+
+  try {
+    const updateBuildingQuery = fql`
+      buildings.byId(${buildingId})?.update(${{
+      buildingName,
+      buildingUrlSlug,
+      location,
+      region,
+      noOfFloor,
+      manager,
+    }})
+    `;
+
+    const result = await faunaClient.query(updateBuildingQuery);
+    res.status(200).json({
+      message: "Building updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        msg: "An error occurred while updating the building",
+        error,
+      });
+    }
+
+    console.error("Error updating building:", error);
+    res.status(500).json({
+      error: "An error occurred while updating the building",
+    });
+  }
+};
