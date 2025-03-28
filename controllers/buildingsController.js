@@ -181,3 +181,36 @@ export const updateBuilding = async (req, res) => {
     });
   }
 };
+
+export const deleteBuilding = async (req, res) => {
+  const buildingId = req.params.id;
+
+  if (!buildingId) {
+    return res.status(400).json({ error: "Building ID is required" });
+  }
+
+  try {
+    const deleteBuildingQuery = fql`
+      buildings.byId(${buildingId})?.delete()
+    `;
+
+    const result = await faunaClient.query(deleteBuildingQuery);
+    res.status(200).json({
+      message: "Building deleted successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        msg: "An error occurred while deleting the building",
+        error,
+      });
+    }
+
+    console.error("Error deleting building:", error);
+    res.status(500).json({
+      error: "An error occurred while deleting the building",
+    });
+  }
+}
