@@ -36,6 +36,7 @@ export const createBuilding = async (req, res) => {
     }})`;
 
     const result = await faunaClient.query(createBuildingQuery);
+    console.log("===> Result of fauna querry:", result);
     res.status(201).json({
       message: "Building was created successfully",
       data: result,
@@ -84,6 +85,39 @@ export const getAllBuildings = async (req, res) => {
     console.error("Error retrieving buildings:", error);
     res.status(500).json({
       error: "An error occurred while retrieving the buildings",
+    });
+  }
+};
+
+export const getBuildingById = async (req, res) => {
+  const buildingId = req.params.id;
+
+  if (!buildingId) {
+    return res.status(400).json({ error: "Building ID is required" });
+  }
+
+  try {
+    const getBuildingByIdQuery = fql`
+      buildings.byId(${buildingId})
+    `;
+
+    const result = await faunaClient.query(getBuildingByIdQuery);
+    res.status(200).json({
+      message: "Building retrieved successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      console.error("Fauna error:", error);
+      return res.status(500).json({
+        msg: "An error occurred while retrieving the building",
+        error,
+      });
+    }
+
+    console.error("Error retrieving building:", error);
+    res.status(500).json({
+      error: "An error occurred while retrieving the building",
     });
   }
 };
