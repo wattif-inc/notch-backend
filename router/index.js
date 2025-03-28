@@ -1,7 +1,7 @@
 import { Router } from "express";
 import onboardingRouter from "./onboarding.routes.js";
 import organizationRouter from "./organization.routes.js";
-
+import buildingRouter from "./buildings.routes.js";
 import spaceRouter from "./space.routes.js";
 import devicesRouter from "./devices.routes.js";
 
@@ -9,6 +9,7 @@ const router = Router();
 
 router.use("/onboarding", onboardingRouter);
 router.use("/organization", organizationRouter);
+router.use("/buildings", buildingRouter);
 router.use("/space", spaceRouter);
 router.use("/devices", devicesRouter);
 
